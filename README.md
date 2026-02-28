@@ -1,6 +1,6 @@
 <sub> The Thumby is recomended to run House 26, other hardware other than the Thumby may glitch since this software is only built to run naitively on the Thumby. If anyone needs me to make House 26 run natively on another device, DM @pikachu1260 on Discord or comment on this project. 
 
-**What does the OS rely on?**
+**How does House 26 randomize things?**
 
 <sub> House 26 relies on an engine called the Chaos Engine which uses many different factors to replicate randomization for many of the features on the OS.
 
