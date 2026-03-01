@@ -1,3 +1,8 @@
+Project Omni
+
+<sub>  Here at Project Omni, we strive to create open-source software and Operating Systems for various micro-hardware. This could range from a Thumby all the way to a Raspbery Pi. There are thousands of devices out in the world that Project Omni can help create the base code for everyone to use, customize, and distribute to create a bigger foundation, without starting from scratch.
+-Project Omni: Everywhere, Everything, Open.
+
 <sub> The Thumby is recomended to run House 26, other hardware other than the Thumby may glitch since this software is only built to run naitively on the Thumby. If anyone needs me to make House 26 run natively on another device, DM @pikachu1260 on Discord or comment on this project. 
 
 **How does House 26 randomize things?**
