@@ -1,3 +1,4 @@
+#Designed by Eri & Co
 import gc, time, os, random
 import thumby
 
