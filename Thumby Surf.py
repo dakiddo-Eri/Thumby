@@ -1,7 +1,6 @@
 # ==============================================
 # ThumbySurf.py
 # Endless surfing game for the Original Thumby
-# 72x40 monochrome OLED | MicroPython | RP2040
 # ==============================================
 
 import thumby
