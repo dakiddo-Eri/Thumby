@@ -31,7 +31,7 @@ The current version of this time this was written, caps the framerate at 30 fps 
 
 <img width="146" height="99" alt="image" src="https://github.com/user-attachments/assets/4e773d97-dab5-423e-bcfa-7e000ebcebd7" />
 
-<sub> This is the Info tab, find out what version of House 26 you're on and check hardware plus license. Select from the 2 tabs using the down button on d-pad.
+<sub> This is the Info tab, find out what version of House 26 you're on and check hardware plus license. Select from the 2 tabs using the down button. Some newer versions of House 26 may use left/right instead to select.
 
 <img width="146" height="89" alt="image" src="https://github.com/user-attachments/assets/65799a9c-ce85-46d4-bf89-8c1d5506702d" /> <img width="143" height="90" alt="image" src="https://github.com/user-attachments/assets/b08996c9-91a7-4d40-a843-61165650fcd8" />
 
@@ -47,4 +47,5 @@ The current version of this time this was written, caps the framerate at 30 fps 
 
 **Information about the License may be inaccaurcate, please check the license to make sure**
 
+Apps are being constantly worked on to improve House 26 for the better. Sudden changes may occur to adapt new-found bugs or just to improve House 26 in general.
 -Eri 
