@@ -31,7 +31,7 @@ The current version of this time this was written, caps the framerate at 30 fps 
 
 <img width="146" height="99" alt="image" src="https://github.com/user-attachments/assets/4e773d97-dab5-423e-bcfa-7e000ebcebd7" />
 
-<sub> This is the Info tab, find out what version of House 26 you're on and check hardware plus license. Select from the 2 tabs using the down button. Some newer versions of House 26 may use left/right instead to select.
+<sub> This is the Info tab, find out what version of House 26 you're on and check hardware plus license. Select from the 2 tabs using the down button and A to select your selection. Some newer versions of House 26 may use left/right instead to select and down to select your selection.
 
 <img width="146" height="89" alt="image" src="https://github.com/user-attachments/assets/65799a9c-ce85-46d4-bf89-8c1d5506702d" /> <img width="143" height="90" alt="image" src="https://github.com/user-attachments/assets/b08996c9-91a7-4d40-a843-61165650fcd8" />
 
