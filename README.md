@@ -47,5 +47,6 @@ The current version of this time this was written, caps the framerate at 30 fps 
 
 **Information about the License may be inaccaurcate, please check the license to make sure**
 
-Apps are being constantly worked on to improve House 26 for the better. Sudden changes may occur to adapt new-found bugs or just to improve House 26 in general.
+<sub> Apps are being constantly worked on to improve House 26 for the better. Sudden changes may occur to adapt new-found bugs or just to improve House 26 in general.
+
 -Eri 
