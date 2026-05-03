@@ -1,15 +1,13 @@
-#Designed by Eri & Co California
+# House 26
+# Version: v26.10
+#Eri is very cool :3
+
 import gc, time, os, random
 import thumby
+import math
 
-# -------------------------
-# VERSION
-# -------------------------
-OS_VERSION = "v26.8"
+OS_VERSION = "v26.10"
 
-# -------------------------
-# MODES
-# -------------------------
 MODE_HOME   = -1
 MODE_MUSIC  = 0
 MODE_NOTES  = 1
@@ -27,9 +25,6 @@ BUF_MAX        = 128
 FRAME_MS       = 33   # ~30 FPS
 GC_INTERVAL_MS = 2000
 
-# -------------------------
-# INPUT
-# -------------------------
 def update_input():
     thumby.buttonA.update()
     thumby.buttonB.update()
@@ -48,9 +43,6 @@ def any_just_pressed():
         thumby.buttonR.justPressed()
     )
 
-# -------------------------
-# DISPLAY HELPERS
-# -------------------------
 def clear():
     thumby.display.fill(0)
 
@@ -129,9 +121,10 @@ def boot_animation():
     time.sleep_ms(900)
 
     clear()
-    thumby.display.drawText("Powered by", 10, 12, 1)
-    thumby.display.drawText("Questionable", 4, 20, 1)
-    thumby.display.drawText("Engineering", 6, 28, 1)
+    # moved left slightly to avoid clipping (x positions reduced by 4 total)
+    thumby.display.drawText("Powered by", 6, 12, 1)
+    thumby.display.drawText("Questionable", 0, 20, 1)
+    thumby.display.drawText("Engineering", 2, 28, 1)
     show()
     time.sleep_ms(1500)
 
@@ -190,9 +183,6 @@ def draw_home():
         home_scroll_x = 72
     show()
 
-# -------------------------
-# MUSIC + BACKGROUND ENGINE
-# -------------------------
 SONG_NAMES = [
     "Upbeat Run","Chill Drift","Boss Echo","Sky Runner",
     "Night Drift","Dungeon Echo","Pixel Bounce","Starfall",
@@ -384,7 +374,7 @@ def music_tick(dt_ms):
     freq, dur = song[music_note_index]
     music_note_index += 1
     if music_note_index >= len(song):
-        music_note_index = 0  # loop forever
+        music_note_index = 0  
     if freq > 0:
         thumby.audio.play(freq, dur)
     music_note_remaining = dur
@@ -392,7 +382,6 @@ def music_tick(dt_ms):
 # -------------------------
 # NOTES / TEXT
 # -------------------------
-#Eri The Great
 def save_note(text):
     files = os.listdir()
     count = 1
@@ -428,9 +417,6 @@ def draw_text_app(buf, cur_char, status, title):
         thumby.display.drawText(status[:18], 0, 32, 1)
     show()
 
-# -------------------------
-# READ
-# -------------------------
 def draw_read_list(files, selected, delete_mode):
     clear()
     thumby.display.drawText("READ", 0, 0, 1)
@@ -482,19 +468,19 @@ def draw_info_menu(tab_index):
     for i, tab in enumerate(INFO_TABS):
         prefix = ">" if i == tab_index else " "
         thumby.display.drawText(prefix + tab, 0, 12 + i*10, 1)
-    thumby.display.drawText("A=Open", 0, 34, 1)
+    thumby.display.drawText("Down=Open", 0, 34, 1)
     show()
 
 def draw_license_page(page):
     clear()
     thumby.display.drawText("LICENSE", 0, 0, 1)
-    start = page * 3
-    chunk = LICENSE_TEXT[start:start+3]
-    y = 12
+    start = page * 4
+    chunk = LICENSE_TEXT[start:start+4]
+    y = 10
     for line in chunk:
-        thumby.display.drawText(line[:18], 0, y, 1)
+        thumby.display.drawText(line[:23], 0, y, 1)
         y += 8
-    thumby.display.drawText("A=Next B=Back", 0, 34, 1)
+    thumby.display.drawText("Down=Next B=Back", 0, 34, 1)
     show()
 
 def draw_hardware_panel(start_time):
@@ -519,76 +505,623 @@ def draw_hardware_panel(start_time):
 def handle_info_mode(info_tab, info_license, info_hardware, license_page, start_time):
     if not info_license and not info_hardware:
         draw_info_menu(info_tab)
-        if thumby.buttonU.justPressed():
+        if thumby.buttonL.justPressed():
             info_tab = (info_tab - 1) % len(INFO_TABS)
-        if thumby.buttonD.justPressed():
+        if thumby.buttonR.justPressed():
             info_tab = (info_tab + 1) % len(INFO_TABS)
-        if thumby.buttonA.justPressed():
+        if thumby.buttonD.justPressed():
             if INFO_TABS[info_tab] == "LICENSE":
                 info_license = True
                 license_page = 0
             else:
                 info_hardware = True
         return info_tab, info_license, info_hardware, license_page
+
     if info_license:
         draw_license_page(license_page)
-        if thumby.buttonA.justPressed():
+        if thumby.buttonD.justPressed():
             license_page += 1
-            if license_page * 3 >= len(LICENSE_TEXT):
+            if license_page * 4 >= len(LICENSE_TEXT):
                 license_page = 0
         if thumby.buttonB.justPressed():
             info_license = False
         return info_tab, info_license, info_hardware, license_page
+
     if info_hardware:
         draw_hardware_panel(start_time)
         if thumby.buttonB.justPressed():
             info_hardware = False
         return info_tab, info_license, info_hardware, license_page
+
     return info_tab, info_license, info_hardware, license_page
 
-# -------------------------
-# CALC
-# -------------------------
-CALC_BUTTONS = [
-    "7","8","9",
-    "4","5","6",
-    "1","2","3",
-    "0","=","+",
-    "-","x","/",
-    "CLR"
-]
-CALC_COLS = 3
+#-------------------------
+#Calculator very very cool
+#-------------------------
+def gcd(a, b):
+    if a < 0:
+        a = -a
+    if b < 0:
+        b = -b
+    while b:
+        a, b = b, a % b
+    if a == 0:
+        return 1
+    return a
 
-def draw_calc(expr, result, index):
-    clear()
-    thumby.display.drawText("CALC", 0, 0, 1)
-    thumby.display.drawText(expr[:18],   0, 10, 1)
-    thumby.display.drawText(result[:18], 0, 18, 1)
-    row = index // CALC_COLS
-    start_row = max(0, row - 1)
-    end_row   = min(start_row + 3, (len(CALC_BUTTONS) + 2) // 3)
-    y = 28
-    for r in range(start_row, end_row):
-        x = 0
-        for c in range(CALC_COLS):
-            i = r * CALC_COLS + c
-            if i >= len(CALC_BUTTONS):
-                break
-            label = CALC_BUTTONS[i]
-            if i == index:
-                thumby.display.drawText("[" + label + "]", x, y, 1)
+def is_close(a, b, eps=1e-10):
+    if a >= b:
+        return (a - b) <= eps
+    return (b - a) <= eps
+
+def fmt_float(x):
+    if is_close(x, int(x), 1e-10):
+        return str(int(x))
+    return '%.8g' % x
+
+class Rational:
+    def __init__(self, n, d):
+        if d == 0:
+            raise ValueError('div0')
+        if d < 0:
+            n = -n
+            d = -d
+        g = gcd(n, d)
+        self.n = n // g
+        self.d = d // g
+
+    def add(self, o):
+        return Rational(self.n * o.d + o.n * self.d, self.d * o.d)
+
+    def sub(self, o):
+        return Rational(self.n * o.d - o.n * self.d, self.d * o.d)
+
+    def mul(self, o):
+        return Rational(self.n * o.n, self.d * o.d)
+
+    def div(self, o):
+        if o.n == 0:
+            raise ValueError('div0')
+        return Rational(self.n * o.d, self.d * o.n)
+
+    def neg(self):
+        return Rational(-self.n, self.d)
+
+    def pow_int(self, e):
+        e = int(e)
+        if e == 0:
+            return Rational(1, 1)
+        if e > 0:
+            return Rational(self.n ** e, self.d ** e)
+        if self.n == 0:
+            raise ValueError('pow0')
+        e = -e
+        return Rational(self.d ** e, self.n ** e)
+
+    def text(self):
+        if self.d == 1:
+            return str(self.n)
+        return str(self.n) + '/' + str(self.d)
+
+    def to_float(self):
+        return self.n / self.d
+
+def parse_number_rational(s):
+    if '.' not in s:
+        return Rational(int(s), 1)
+
+    parts = s.split('.')
+    if len(parts) != 2:
+        raise ValueError('badnum')
+
+    a = parts[0]
+    b = parts[1]
+    if a == '':
+        a = '0'
+    if b == '':
+        b = '0'
+
+    neg = 0
+    if a and a[0] == '-':
+        neg = 1
+        a = a[1:]
+        if a == '':
+            a = '0'
+
+    den = 10 ** len(b)
+    num = int(a) * den + int(b)
+    if neg:
+        num = -num
+    return Rational(num, den)
+
+def is_num_token(t):
+    if t == '':
+        return 0
+    dots = 0
+    i = 0
+    while i < len(t):
+        c = t[i]
+        if c == '.':
+            dots += 1
+            if dots > 1:
+                return 0
+        elif c < '0' or c > '9':
+            return 0
+        i += 1
+    return 1
+
+def preprocess(expr):
+    out = ''
+    prev = ''
+    i = 0
+    while i < len(expr):
+        c = expr[i]
+        if c == ' ':
+            i += 1
+            continue
+        if c == 'x':
+            c = '*'
+
+        if prev != '':
+            prev_mul = ((prev >= '0' and prev <= '9') or prev == '.' or prev == 'X' or prev == ')')
+            cur_mul = ((c >= '0' and c <= '9') or c == '.' or c == 'X' or c == '(')
+            if prev_mul and cur_mul:
+                out += '*'
+
+        out += c
+        prev = c
+        i += 1
+    return out
+
+def tokenize(expr):
+    expr = preprocess(expr)
+    tokens = []
+    i = 0
+    while i < len(expr):
+        c = expr[i]
+
+        if c == ' ':
+            i += 1
+            continue
+
+        if (c >= '0' and c <= '9') or c == '.':
+            j = i
+            dots = 0
+            while j < len(expr):
+                cj = expr[j]
+                if cj == '.':
+                    dots += 1
+                    if dots > 1:
+                        raise ValueError('badnum')
+                    j += 1
+                elif cj >= '0' and cj <= '9':
+                    j += 1
+                else:
+                    break
+            num = expr[i:j]
+            if num == '.':
+                raise ValueError('badnum')
+            tokens.append(num)
+            i = j
+            continue
+
+        if c == 'X':
+            tokens.append('xvar')
+            i += 1
+            continue
+
+        if c in '+-*/^()=':
+            tokens.append(c)
+            i += 1
+            continue
+
+        raise ValueError('badchar')
+
+    return tokens
+
+def to_rpn(tokens):
+    out = []
+    ops = []
+    prec = {'u-': 4, '^': 3, '*': 2, '/': 2, '+': 1, '-': 1}
+    right = {'u-': 1, '^': 1, '*': 0, '/': 0, '+': 0, '-': 0}
+    prev = 'start'
+
+    i = 0
+    while i < len(tokens):
+        t = tokens[i]
+
+        if is_num_token(t):
+            out.append(t)
+            prev = 'num'
+
+        elif t == 'xvar':
+            out.append(t)
+            prev = 'var'
+
+        elif t in '+-*/^':
+            op = t
+            if t == '-' and (prev == 'start' or prev == 'op' or prev == 'lpar'):
+                op = 'u-'
+
+            while ops:
+                top = ops[-1]
+                if top == '(':
+                    break
+                if (right[op] and prec[op] < prec[top]) or ((not right[op]) and prec[op] <= prec[top]):
+                    out.append(ops.pop())
+                else:
+                    break
+
+            ops.append(op)
+            prev = 'op'
+
+        elif t == '(':
+            ops.append(t)
+            prev = 'lpar'
+
+        elif t == ')':
+            found = 0
+            while ops:
+                top = ops.pop()
+                if top == '(':
+                    found = 1
+                    break
+                out.append(top)
+            if not found:
+                raise ValueError('paren')
+            prev = 'rpar'
+
+        else:
+            raise ValueError('token')
+
+        i += 1
+
+    while ops:
+        top = ops.pop()
+        if top == '(':
+            raise ValueError('paren')
+        out.append(top)
+
+    return out
+
+def eval_rpn_rat(rpn):
+    st = []
+    i = 0
+    while i < len(rpn):
+        t = rpn[i]
+        if is_num_token(t):
+            st.append(parse_number_rational(t))
+        elif t == 'u-':
+            if len(st) < 1:
+                raise ValueError('syntax')
+            a = st.pop()
+            st.append(a.neg())
+        elif t in '+-*/^':
+            if len(st) < 2:
+                raise ValueError('syntax')
+            b = st.pop()
+            a = st.pop()
+            if t == '+':
+                st.append(a.add(b))
+            elif t == '-':
+                st.append(a.sub(b))
+            elif t == '*':
+                st.append(a.mul(b))
+            elif t == '/':
+                st.append(a.div(b))
             else:
-                thumby.display.drawText(" " + label + " ", x, y, 1)
-            x += 22
-        y += 8
-    show()
+                if b.d != 1:
+                    raise ValueError('pow')
+                st.append(a.pow_int(b.n))
+        else:
+            raise ValueError('var')
+        i += 1
 
-def calc_evaluate(expr):
+    if len(st) != 1:
+        raise ValueError('syntax')
+    return st[0]
+
+def eval_rpn_float(rpn, xv):
+    st = []
+    i = 0
+    while i < len(rpn):
+        t = rpn[i]
+        if is_num_token(t):
+            st.append(float(t))
+        elif t == 'xvar':
+            st.append(float(xv))
+        elif t == 'u-':
+            if len(st) < 1:
+                raise ValueError('syntax')
+            st.append(-st.pop())
+        elif t in '+-*/^':
+            if len(st) < 2:
+                raise ValueError('syntax')
+            b = st.pop()
+            a = st.pop()
+            if t == '+':
+                st.append(a + b)
+            elif t == '-':
+                st.append(a - b)
+            elif t == '*':
+                st.append(a * b)
+            elif t == '/':
+                if is_close(b, 0.0, 1e-15):
+                    raise ValueError('div0')
+                st.append(a / b)
+            else:
+                st.append(a ** b)
+        else:
+            raise ValueError('syntax')
+        i += 1
+
+    if len(st) != 1:
+        raise ValueError('syntax')
+    return st[0]
+
+def eval_exact(expr):
+    tokens = tokenize(expr)
+    if 'xvar' in tokens or '=' in tokens:
+        raise ValueError('var')
+    return eval_rpn_rat(to_rpn(tokens))
+
+def eval_float_expr(expr, xv):
+    tokens = tokenize(expr)
+    if '=' in tokens:
+        raise ValueError('eq')
+    return eval_rpn_float(to_rpn(tokens), xv)
+
+def frac_approx(x, max_den=999):
+    neg = 0
+    if x < 0:
+        neg = 1
+        x = -x
+
+    a0 = int(x)
+    if is_close(x, a0, 1e-12):
+        if neg:
+            return (-a0, 1)
+        return (a0, 1)
+
+    n0, d0 = 1, 0
+    n1, d1 = a0, 1
+    y = x
+    count = 0
+
+    while count < 24:
+        frac = y - int(y)
+        if is_close(frac, 0.0, 1e-12):
+            break
+        y = 1.0 / frac
+        a = int(y)
+        n2 = a * n1 + n0
+        d2 = a * d1 + d0
+        if d2 > max_den:
+            break
+        n0, d0 = n1, d1
+        n1, d1 = n2, d2
+        if is_close(float(n1) / float(d1), x, 1e-10):
+            break
+        count += 1
+
+    if neg:
+        n1 = -n1
+    return (n1, d1)
+
+def solve_equation(expr):
+    parts = preprocess(expr).split('=')
+    if len(parts) != 2:
+        raise ValueError('eq')
+    left = parts[0]
+    right = parts[1]
+    if left == '' or right == '':
+        raise ValueError('eq')
+
+    def f(xv):
+        return eval_float_expr(left, xv) - eval_float_expr(right, xv)
+
+    y0 = f(0.0)
+    y1 = f(1.0)
+    y2 = f(2.0)
+    c = y0
+    a = (y2 - 2.0 * y1 + y0) / 2.0
+    b = y1 - a - c
+    y3 = f(3.0)
+
+    if not is_close(y3, a * 9.0 + b * 3.0 + c, 1e-6):
+        raise ValueError('degree')
+
+    if is_close(a, 0.0, 1e-10):
+        if is_close(b, 0.0, 1e-10):
+            if is_close(c, 0.0, 1e-10):
+                return 'ALL X'
+            return 'NO SOL'
+        x = -c / b
+        n, d = frac_approx(x)
+        if d == 1:
+            return 'x=' + str(n)
+        return 'x=' + fmt_float(x)
+
+    disc = b * b - 4.0 * a * c
+    if disc < -1e-10:
+        return 'NO REAL'
+
+    if is_close(disc, 0.0, 1e-10):
+        x = -b / (2.0 * a)
+        n, d = frac_approx(x)
+        if d == 1:
+            return 'x=' + str(n)
+        return 'x=' + fmt_float(x)
+
+    s = math.sqrt(disc)
+    x1 = (-b - s) / (2.0 * a)
+    x2 = (-b + s) / (2.0 * a)
+    n1, d1 = frac_approx(x1)
+    n2, d2 = frac_approx(x2)
+
+    if d1 == 1:
+        a1 = str(n1)
+    else:
+        a1 = fmt_float(x1)
+
+    if d2 == 1:
+        a2 = str(n2)
+    else:
+        a2 = fmt_float(x2)
+
+    return 'x1=' + a1 + ',x2=' + a2
+
+def calculate(expr):
+    expr = expr.strip()
+    if expr == '':
+        return ''
+
+    if '=' in expr:
+        if 'X' in expr:
+            return solve_equation(expr)
+        parts = preprocess(expr).split('=')
+        if len(parts) != 2:
+            raise ValueError('eq')
+        a = eval_exact(parts[0])
+        b = eval_exact(parts[1])
+        if a.n == b.n and a.d == b.d:
+            return 'TRUE'
+        return 'FALSE'
+
+    if 'X' in expr:
+        return 'USE ='
+
+    r = eval_exact(expr)
+    return r.text()
+
+# --- Calculator UI pages
+PAGES = [
+    [
+        ['7', '8', '9', 'ANS'],
+        ['4', '5', '6', '.'],
+        ['1', '2', '3', '0']
+    ],
+    [
+        ['+', '-', 'x', '/'],
+        ['(', ')', '^', 'SOL'],
+        ['X', 'C', 'BS', 'NEG']
+    ],
+    [
+        ['n/d', '+', '-', 'ANS'],
+        ['*', '/', '^', '.'],
+        ['(', ')', 'BS', 'C']
+    ],
+    [
+        ['X', '=', 'SOL', 'ANS'],
+        ['^', '(', ')', '/'],
+        ['1', '2', '3', '0']
+    ]
+]
+
+PAGE_NAMES = ['NUM', 'OPS', 'FRAC', 'EQ']
+
+def clip_right(s, max_chars):
+    if len(s) <= max_chars:
+        return s
+    return s[-max_chars:]
+
+def add_text(t, expr_ref):
+    if len(expr_ref[0]) >= 48:
+        return
+    expr_ref[0] += t
+
+def run_calc(expr_ref, result_ref, last_answer_ref):
     try:
-        expr = expr.replace("x", "*")
-        return str(eval(expr))
+        out = calculate(expr_ref[0])
+        if out == '':
+            result_ref[0] = 'READY'
+        else:
+            result_ref[0] = out
+            if out not in ('TRUE', 'FALSE', 'USE =', 'NO REAL', 'NO SOL', 'ALL X'):
+                last_answer_ref[0] = out
+    except Exception:
+        result_ref[0] = 'ERROR'
+
+def press_key(k, expr_ref, result_ref, last_answer_ref):
+    if k == 'ANS':
+        add_text(last_answer_ref[0], expr_ref)
+    elif k == 'x':
+        add_text('*', expr_ref)
+    elif k == 'NEG':
+        add_text('-', expr_ref)
+    elif k == 'BS':
+        if expr_ref[0] != '':
+            expr_ref[0] = expr_ref[0][:-1]
+    elif k == 'C':
+        expr_ref[0] = ''
+        result_ref[0] = 'CLEARED'
+    elif k == 'SOL':
+        run_calc(expr_ref, result_ref, last_answer_ref)
+    elif k == 'n/d':
+        add_text('/', expr_ref)
+    elif k == '=':
+        add_text('=', expr_ref)
+    else:
+        add_text(k, expr_ref)
+
+def draw_key(x, y, w, h, label, selected):
+    if selected:
+        thumby.display.drawFilledRectangle(x, y, w, h, 1)
+        thumby.display.drawRectangle(x, y, w, h, 1)
+        thumby.display.drawText(label, x + 2, y + 2, 0)
+    else:
+        thumby.display.drawRectangle(x, y, w, h, 1)
+        thumby.display.drawText(label, x + 2, y + 2, 1)
+
+def draw_ui(page, cx, cy, expr, result):
+    try:
+        thumby.display.setFPS(20)
     except:
-        return "ERR"
+        pass
+    try:
+        thumby.display.setFont('/lib/font3x5.bin', 3, 5, 1)
+    except:
+        pass
+
+    thumby.display.fill(0)
+    status = clip_right(result, 12) + ' ' + PAGE_NAMES[page]
+    thumby.display.drawText(clip_right(status, 23), 0, 0, 1)
+
+    thumby.display.drawText(clip_right(expr, 23), 0, 6, 1)
+
+    cell_w = 18
+    cell_h = 9
+    start_y = 12
+
+    ry = 0
+    while ry < 3:
+        rx = 0
+        while rx < 4:
+            x = rx * cell_w
+            y = start_y + ry * cell_h
+            draw_key(x, y, cell_w - 1, cell_h - 1, PAGES[page][ry][rx], (rx == cx and ry == cy))
+            rx += 1
+        ry += 1
+
+    # No  pixel shift
+    thumby.display.update()
+
+   #Yes pixel shift
+    try:
+        thumby.display.setFont('/lib/font5x7.bin', 5, 7, 1)
+    except:
+        pass
+
+    try:
+        thumby.display.setFPS(30)
+    except:
+        pass
+
+    try:
+        thumby.display.xOffset = 0
+        thumby.display.yOffset = 0
+    except:
+        pass
 
 # -------------------------
 # DRAW
@@ -667,9 +1200,6 @@ def full_redraw_canvas(canvas, cx, cy):
     draw_cursor_outline(cx, cy)
     show()
 
-# -------------------------
-# GALLERY
-# -------------------------
 def save_drawing(canvas):
     files = os.listdir()
     count = 1
@@ -765,9 +1295,13 @@ def run():
     license_page  = 0
 
     # CALC
-    calc_expr = ""
-    calc_result = ""
-    calc_x = 0
+    page = 0
+    cx = 0
+    cy = 0
+    expr = ''
+    result = 'READY'
+    last_answer = '0'
+    ab_lock = 0
 
     # DRAW
     draw_canvas_data = new_canvas()
@@ -797,16 +1331,13 @@ def run():
 
         update_input()
 
-        # background music tick (approx dt = FRAME_MS)
         music_tick(FRAME_MS)
 
-        # HOME
         if mode == MODE_HOME:
             draw_home()
             if thumby.buttonU.justPressed():
                 mode = MODE_MUSIC
 
-        # GLOBAL APP CYCLING (except when in draw canvas)
         elif not (mode == MODE_DRAW and not draw_in_toolbar):
             if thumby.buttonU.justPressed():
                 mode += 1
@@ -896,22 +1427,44 @@ def run():
             )
 
         elif mode == MODE_CALC:
-            draw_calc(calc_expr, calc_result, calc_x)
+            draw_ui(page, cx, cy, expr, result)
+
+            if thumby.buttonA.pressed() and thumby.buttonB.pressed():
+                if ab_lock == 0:
+                    expr = ''
+                    result = 'CLEARED'
+                    ab_lock = 1
+            else:
+                ab_lock = 0
+
             if thumby.buttonL.justPressed():
-                calc_x = (calc_x - 1) % len(CALC_BUTTONS)
+                cx -= 1
+                if cx < 0:
+                    cx = 3
             if thumby.buttonR.justPressed():
-                calc_x = (calc_x + 1) % len(CALC_BUTTONS)
-            if thumby.buttonA.justPressed():
-                item = CALC_BUTTONS[calc_x]
-                if item == "CLR":
-                    calc_expr   = ""
-                    calc_result = ""
-                elif item == "=":
-                    calc_result = calc_evaluate(calc_expr)
-                else:
-                    calc_expr += item
-            if thumby.buttonB.justPressed():
-                calc_expr = calc_expr[:-1]
+                cx += 1
+                if cx > 3:
+                    cx = 0
+
+            if thumby.buttonD.justPressed():
+                cy += 1
+                if cy > 2:
+                    cy = 0
+
+
+            if thumby.buttonA.justPressed() and (not thumby.buttonB.pressed()):
+                expr_ref = [expr]
+                result_ref = [result]
+                last_answer_ref = [last_answer]
+                press_key(PAGES[page][cy][cx], expr_ref, result_ref, last_answer_ref)
+                expr = expr_ref[0]
+                result = result_ref[0]
+                last_answer = last_answer_ref[0]
+
+            if thumby.buttonB.justPressed() and (not thumby.buttonA.pressed()):
+                page += 1
+                if page >= len(PAGES):
+                    page = 0
 
         elif mode == MODE_DRAW:
             if draw_in_toolbar:
@@ -995,5 +1548,3 @@ def run():
             time.sleep_ms(FRAME_MS - dt)
 
 run()
-
-
