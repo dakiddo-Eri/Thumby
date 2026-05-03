@@ -5,7 +5,7 @@ Project Omni
 
 <sub> The Thumby is recomended to run House 26, other hardware other than the Thumby may glitch since this software is only built to run naitively on the Thumby. If anyone needs me to make House 26 run natively on another device, DM @pikachu1260 on Discord or comment on this project. 
 
----Setting up your tool kit---
+Setting up your tool kit
 
 <sub> Thumby Random is a tool kit of optional assets for you to use. Kitmen is an exeption of being unfinished. One of the assets is a benchmark, you can use that benchmark to measure your Thumby's power. Results may be similiar for your device every run. Every release of House 26 OS may have varying controls, use the README to help guide you through House 26. Releases are pushed through as the most stable versions and ready for rapid deployment and assessment. Released versions have been throughly tested but may still contain some bugs. There are a few exeptional bugs which are intentional for certain reasons.
 
