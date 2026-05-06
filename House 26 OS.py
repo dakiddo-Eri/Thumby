@@ -1,6 +1,7 @@
 # House 26
-# Version: v26.10
+# Version: v26.10.1
 #Eri is very cool :3
+# ------------------------------------------------------------
 
 import gc, time, os, random
 import thumby
@@ -121,7 +122,6 @@ def boot_animation():
     time.sleep_ms(900)
 
     clear()
-    # moved left slightly to avoid clipping (x positions reduced by 4 total)
     thumby.display.drawText("Powered by", 6, 12, 1)
     thumby.display.drawText("Questionable", 0, 20, 1)
     thumby.display.drawText("Engineering", 2, 28, 1)
@@ -374,14 +374,11 @@ def music_tick(dt_ms):
     freq, dur = song[music_note_index]
     music_note_index += 1
     if music_note_index >= len(song):
-        music_note_index = 0  
+        music_note_index = 0
     if freq > 0:
         thumby.audio.play(freq, dur)
     music_note_remaining = dur
 
-# -------------------------
-# NOTES / TEXT
-# -------------------------
 def save_note(text):
     files = os.listdir()
     count = 1
@@ -447,9 +444,6 @@ def draw_read_page(title, page_text, page_idx, total_pages):
     thumby.display.drawText("A=Next B=Back", 0, 34, 1)
     show()
 
-# -------------------------
-# INFO
-# -------------------------
 LICENSE_TEXT = [
     "HOUSE 26 LICENSE","",
     "This software is","provided as-is with",
@@ -535,9 +529,6 @@ def handle_info_mode(info_tab, info_license, info_hardware, license_page, start_
 
     return info_tab, info_license, info_hardware, license_page
 
-#-------------------------
-#Calculator very very cool
-#-------------------------
 def gcd(a, b):
     if a < 0:
         a = -a
@@ -994,7 +985,6 @@ def calculate(expr):
     r = eval_exact(expr)
     return r.text()
 
-# --- Calculator UI pages
 PAGES = [
     [
         ['7', '8', '9', 'ANS'],
@@ -1084,29 +1074,41 @@ def draw_ui(page, cx, cy, expr, result):
         pass
 
     thumby.display.fill(0)
-    status = clip_right(result, 12) + ' ' + PAGE_NAMES[page]
-    thumby.display.drawText(clip_right(status, 23), 0, 0, 1)
 
-    thumby.display.drawText(clip_right(expr, 23), 0, 6, 1)
+    page_label = PAGE_NAMES[page]
+    try:
+        page_x = 72 - (len(page_label) * 4)
+        if page_x < 0:
+            page_x = 0
+    except:
+        page_x = 56
+    thumby.display.drawText(page_label, page_x, 0, 1)
+
+    MAX_CHARS = 28
+
+    safe_result = clip_right(result, MAX_CHARS)
+    safe_expr   = clip_right(expr,   MAX_CHARS)
+
+    thumby.display.drawText(safe_result, 0, 0, 1)
+    thumby.display.drawText(safe_expr,   0, 6, 1)
 
     cell_w = 18
     cell_h = 9
     start_y = 12
 
-    ry = 0
-    while ry < 3:
-        rx = 0
-        while rx < 4:
+    for ry in range(3):
+        for rx in range(4):
             x = rx * cell_w
             y = start_y + ry * cell_h
-            draw_key(x, y, cell_w - 1, cell_h - 1, PAGES[page][ry][rx], (rx == cx and ry == cy))
-            rx += 1
-        ry += 1
+            draw_key(
+                x, y,
+                cell_w - 1, cell_h - 1,
+                PAGES[page][ry][rx],
+                (rx == cx and ry == cy)
+            )
 
-    # No  pixel shift
     thumby.display.update()
 
-   #Yes pixel shift
     try:
         thumby.display.setFont('/lib/font5x7.bin', 5, 7, 1)
     except:
@@ -1123,9 +1125,6 @@ def draw_ui(page, cx, cy, expr, result):
     except:
         pass
 
-# -------------------------
-# DRAW
-# -------------------------
 DRAW_TOOLS       = ["PAINT", "ERASE"]
 DRAW_TOOL_PAINT  = 0
 DRAW_TOOL_ERASE  = 1
@@ -1261,9 +1260,6 @@ def draw_gallery_view(filename):
     thumby.display.drawText(filename[:10], 0, 0, 1)
     show()
 
-# -------------------------
-# MAIN LOOP
-# -------------------------
 def run():
     global music_playing, music_song_index
 
@@ -1271,16 +1267,13 @@ def run():
 
     mode = MODE_HOME
 
-    # NOTES
     buf       = ""
     cur_char  = "a"
     status    = ""
 
-    # MUSIC
     music_sel    = 0
     music_offset = 0
 
-    # READ
     notes        = []
     note_sel     = 0
     delete_mode  = False
@@ -1288,13 +1281,11 @@ def run():
     read_page    = 0
     reading      = False
 
-    # INFO
     info_tab      = 0
     info_license  = False
     info_hardware = False
     license_page  = 0
 
-    # CALC
     page = 0
     cx = 0
     cy = 0
@@ -1303,7 +1294,6 @@ def run():
     last_answer = '0'
     ab_lock = 0
 
-    # DRAW
     draw_canvas_data = new_canvas()
     draw_in_toolbar  = True
     draw_tool        = DRAW_TOOL_PAINT
@@ -1313,7 +1303,6 @@ def run():
     prev_cy          = draw_cy
     draw_dirty       = False
 
-    # GALLERY
     gallery_files       = []
     gallery_sel         = 0
     gallery_viewing     = False
@@ -1351,7 +1340,6 @@ def run():
                 gallery_delete_mode = False
                 status            = ""
 
-        # MUSIC
         if mode == MODE_MUSIC:
             if music_sel < music_offset:
                 music_offset = music_sel
@@ -1450,7 +1438,6 @@ def run():
                 cy += 1
                 if cy > 2:
                     cy = 0
-
 
             if thumby.buttonA.justPressed() and (not thumby.buttonB.pressed()):
                 expr_ref = [expr]
